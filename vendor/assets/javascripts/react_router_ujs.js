@@ -1,5 +1,3 @@
-// Unobtrusive scripting adapter for React Router based on react-rails gem.
-// https://github.com/reactjs/react-rails/blob/master/lib/assets/javascripts/react_ujs.js
 (function(document, window, React, ReactDOM, ReactRouter) {
   var ROUTER_CLASS_NAME = 'data-react-router-class';
   var LOCATION_CLASS_NAME = 'data-react-router-location';
@@ -30,15 +28,21 @@
       var className = routerNode.getAttribute(ROUTER_CLASS_NAME);
       var routes = window[className] || eval.call(window, className);
 
-      var locationName = routerNode.getAttribute(LOCATION_CLASS_NAME);
-      var location = ReactRouter[locationName] ;
-
       var dataJson = routerNode.getAttribute(DATA_CLASS_NAME);
       var data = JSON.parse(dataJson);
 
-      ReactRouter.run(routes, location, function (Handler) {
-        ReactDOM.render(React.createElement(Handler, data), routerNode);
-      });
+      var locationName = routerNode.getAttribute(LOCATION_CLASS_NAME);
+      switch(locationName) {
+        case "BrowserHistory":
+          data["history"]=ReactRouter.browserHistory;
+          break;
+        case "MemoryHistory":
+          data["history"]=ReactRouter.createMemoryHistory();
+          break;
+        default:
+          data["history"]=ReactRouter.hashHistory;
+      }
+      ReactDOM.render(React.createElement(ReactRouter.Router,data,routes), routerNode);
     }
   };
 
